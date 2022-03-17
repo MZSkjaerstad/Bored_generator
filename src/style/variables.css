@@ -1,0 +1,9 @@
+:root {
+   --primary-color: #2b2d42;
+   --secondary-color: #edf2f4;
+   --highlight-color: #ef233c;
+
+   --font-body: "roboto";
+   --font-display: "bely-display, san-serif";
+   --font-size: 12px;
+}

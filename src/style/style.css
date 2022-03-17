@@ -1,0 +1,5 @@
+body {
+   background: var(--background);
+   font-family: bely-display, sans-serif;
+   color: var(--primary-color);
+}

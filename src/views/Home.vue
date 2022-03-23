@@ -87,7 +87,7 @@ export default {
 
    methods: {
       async getRandom() {
-         const url = 'http://www.boredapi.com/api/activity/';
+         const url = 'https://www.boredapi.com/api/activity/';
          const res = await fetch(url);
          const results = await res.json();
 
@@ -103,7 +103,7 @@ export default {
       },
 
       async getSpecified() {
-         const url = `http://www.boredapi.com/api/activity/?type=${this.values.type}&participants=${this.values.participants}&price=${this.values.price}&accessibility=${this.values.accessibility}`;
+         const url = `https://www.boredapi.com/api/activity/?type=${this.values.type}&participants=${this.values.participants}&price=${this.values.price}&accessibility=${this.values.accessibility}`;
          const res = await fetch(url);
          const results = await res.json();
 
@@ -129,7 +129,6 @@ export default {
       }
    },
 }
-
 </script>
 
 <style>
@@ -261,5 +260,4 @@ export default {
       position: absolute;
       z-index: 20;
    }
-
 </style>

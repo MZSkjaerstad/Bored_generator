@@ -2,63 +2,64 @@
    <div class="bored">
       <div class="bored__app">
          <div class="bored__logo">
-            <div class="bored__logo--small">
+            <h2 class="bored__logo--small">
                Are you
-            </div>
+            </h2>
 
-            <div class="bored__logo--big">
+            <h1 class="bored__logo--big">
                bored
-            </div>
+            </h1>
 
-            <div class="bored__logo--small bored__logo--last">
+            <h2 class="bored__logo--small bored__logo--last">
                are you?
-            </div>
+            </h2>
          </div>
 
          <div class="bored__output">
-            <div class="bored__key">Nr. {{ values.key }}</div>
+            <p class="bored__key">Nr. {{ values.key }}</p>
 
-            <div class="bored__activity">"{{ values.activity }}"</div>
+            <p class="bored__activity">"{{ values.activity }}"</p>
 
-            <div class="bored__link"><a :href="values.link"> {{ values.link }} </a></div>
+            <p class="bored__link"><a :href="values.link"> {{ values.link }} </a></p>
 
-            <div class="bored__type">{{ values.type }}</div>
+            <p class="bored__type">{{ values.type }}</p>
 
             <div class="bored__details">
                <div class="bored__participants bored__details-column">
-                  <div class="bored__details-title">Participants</div>
+                  <p class="bored__details-title">Participants</p>
 
-                  <div class="bored__details-value">{{values.participants}}</div>
+                  <p class="bored__details-value">{{values.participants}}</p>
                </div>
 
                <div class="bored__price bored__details-column">
-                  <div class="bored__details-title">Price</div>
+                  <p class="bored__details-title">Price</p>
 
-                  <div class="bored__details-value">{{values.price}}</div>
+                  <p class="bored__details-value">{{values.price}}</p>
                </div>
 
                <div class="bored__accessibility bored__details-column">
-                  <div class="bored__details-title">Accessibility</div>
+                  <p class="bored__details-title">Accessibility</p>
 
-                  <div class="bored__details-value">{{values.accessibility}}</div>
+                  <p class="bored__details-value">{{values.accessibility}}</p>
                </div>
             </div>
          </div>
 
          <div class="bored__controls">
             <button class="bored__generate bored__button" @click="getRandom">Generate</button>
+
             <button class="bored__filter bored__button" @click="toggleMenu">filter</button>
+
+            <FilterMenu
+               class="bored__filter-menu"
+               v-if="menuToggled === true"
+               :value="values"
+               :toggleMenu="toggleMenu"
+               :getSpecified="getSpecified"
+               @input="(newValue) => {value = newValue}"
+            />
          </div>
       </div>
-
-      <FilterMenu
-         class="bored__filter-menu"
-         v-if="menuToggled === true"
-         :value="values"
-         :toggleMenu="toggleMenu"
-         :getSpecified="getSpecified"
-         @input="(newValue) => {value = newValue}"
-      />
    </div>
 </template>
 
@@ -86,32 +87,22 @@ export default {
    },
 
    methods: {
+
+   /* Fetch random dataset */
       async getRandom() {
          const url = 'https://www.boredapi.com/api/activity/';
-         const res = await fetch(url);
-         const results = await res.json();
-
-         this.values.key = results.key;
-         this.values.type = results.type;
-         this.values.activity = results.activity;
-         this.values.link = results.link
-         this.values.participants = results.participants;
-         this.values.accessibility = results.accessibility;
-         this.values.price = results.price;
-
-         console.log(results)
+         const response = await fetch(url);
+         try {
+            await this.handleRandomFetch(response)
+         } catch(error) {
+            this.error = error.message;
+         }
       },
 
-      async getSpecified() {
-         const url = `https://www.boredapi.com/api/activity/?type=${this.values.type}&participants=${this.values.participants}&price=${this.values.price}&accessibility=${this.values.accessibility}`;
-         const res = await fetch(url);
-         const results = await res.json();
+      async handleRandomFetch(response) {
+         if (response.status >= 200 && response.status < 300) {
+            const results = await response.json();
 
-         if (results.error === 'No activity found with the specified parameters') {
-            this.values.activity = 'Sorry, we did not find a suitable activity'
-            console.log(results)
-
-         } else {
             this.values.key = results.key;
             this.values.type = results.type;
             this.values.activity = results.activity;
@@ -119,9 +110,102 @@ export default {
             this.values.participants = results.participants;
             this.values.accessibility = results.accessibility;
             this.values.price = results.price;
-            console.log(results)
+
+            this.values.accessibility = this.filterAccess()
+            this.values.price = this.filterPrice()
+
+         } else {
+            if(response.status === 404) {
+               throw new Error('Url ikke funnet.');
+               }
+               if(response.status === 401) {
+                  throw new Error('Ikke authorisert.');
+               }
+               if(response.status > 500) {
+                  throw new Error('Server error.');
+               }
+               throw new Error('Her gikk noe galt.');
          }
-         this.toggleMenu()
+      },
+
+   /* Fetch dataset spesified by edited values in filter */
+      async getSpecified() {
+         const url = `https://www.boredapi.com/api/activity/?type=${this.values.type}&participants=${this.values.participants}`;
+         const response = await fetch(url);
+         try {
+            await this.handleSpesifiedFetch(response);
+         } catch(error) {
+            this.error = error.message;
+         };
+      },
+
+      async handleSpesifiedFetch(response) {
+         if (response.status >= 200 && response.status < 300) {
+            const results = await response.json();
+
+            if (results.error === 'No activity found with the specified parameters') {
+               this.values.activity = 'Sorry, we did not find a suitable activity'
+
+            } else {
+               this.values.key = results.key;
+               this.values.type = results.type;
+               this.values.activity = results.activity;
+               this.values.link = results.link
+               this.values.participants = results.participants;
+            }
+
+            this.values.accessibility = this.filterAccess()
+            this.values.price = this.filterPrice()
+            this.toggleMenu()
+
+         } else {
+            if(response.status === 404) {
+               throw new Error('Url ikke funnet.');
+               }
+               if(response.status === 401) {
+                  throw new Error('Ikke authorisert.');
+               }
+               if(response.status > 500) {
+                  throw new Error('Server error.');
+               }
+               throw new Error('Her gikk noe galt.');
+         }
+      },
+
+   /* Convert price in fetched dataset into a more readable value. */
+      filterPrice() {
+         let priceValue = this.values.price
+
+         if (priceValue > 0.76 && priceValue < 1.00) {
+            priceValue = '$$$$'
+         } else if (priceValue > 0.51 && priceValue < 0.75) {
+            priceValue = '$$$'
+         } else if (priceValue > 0.26 && priceValue < 0.50) {
+            priceValue = '$$'
+         } else if (priceValue > 0.01 && priceValue < 0.25) {
+            priceValue = '$'
+         } else {
+            priceValue = 'FREE'
+         }
+         return priceValue
+      },
+
+   /* Convert access in fetched dataset into a more readable value. */
+      filterAccess() {
+         let accessValue = this.values.accessibility
+
+         if (accessValue > 0.76 && accessValue < 1.00) {
+            accessValue = 'Very hard'
+         } else if (accessValue > 0.51 && accessValue < 0.75) {
+            accessValue = 'Hard'
+         } else if (accessValue > 0.26 && accessValue < 0.50) {
+            accessValue = 'Medium'
+         } else if (accessValue > 0.01 && accessValue < 0.25) {
+            accessValue = 'Easy'
+         } else {
+            accessValue = 'Very easy'
+         }
+         return accessValue
       },
 
       toggleMenu() {
@@ -134,6 +218,7 @@ export default {
 <style>
    .bored {
       height: 100%;
+      padding: var(--spacing-medium);
       background: var(--secondary-color);
       display: flex;
       justify-content: center;
@@ -141,31 +226,16 @@ export default {
    }
 
    .bored__app {
-      height: 35rem;
       position: absolute;
       z-index: 10;
       display: flex;
       flex-direction: column;
-      justify-content: space-between;
+      justify-content: center;
       align-items: center;
    }
 
    .bored__logo {
-      width: 15rem;
-   }
-
-   .bored__logo--small {
-      font-size: 1.6rem;
-   }
-
-   .bored__logo--big {
-      color: var(--highlight-color);
-      font-size: 4rem;
-      font-weight: 700;
-      text-transform: uppercase;
-      font-family: bely-display, sans-serif;
-      font-weight: 400;
-      font-style: normal;
+      padding-bottom: var(--spacing-medium);
    }
 
    .bored__logo--last {
@@ -182,45 +252,54 @@ export default {
 
    .bored__key {
       font-family: roboto;
-      font-size: 0.7rem;
+      font-size: var(--font-size-key);
       font-weight: 400;
    }
 
    .bored__activity {
-      padding-top: 1rem;
-      font-size: 1.4rem;
-   }
-
-   .bored__type {
-      font-size: 0.85rem;
-      text-transform: uppercase;
+      text-align: center;
+      font-size: var(--font-size-activity);
+      padding: var(--spacing-medium) 0 0 0;
    }
 
    .bored__link {
+      height: 3rem;
       font-family: roboto;
-      font-size: 0.8rem;
+      font-size: var(--font-size-link);;
+      display: flex;
+      align-items: center;
+   }
+
+   .bored__type {
+      font-family: roboto;
+      font-size: var(--font-size-type);
+      font-weight: 600;
+      text-transform: uppercase;
+      padding: var(--spacing-padding) 0 var(--spacing-small) 0;
    }
 
    .bored__details {
-      display: flex;
-      padding-top: 2rem;
+      padding-top: var(--spacing-small);
       border-top: solid var(--highlight-color) 1px;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
    }
 
    .bored__details-column {
-      padding: 0 2rem;
+      padding: 0 var(--spacing-small);
       display: flex;
       flex-direction: column;
       align-items: center;
    }
 
    .bored__details-title {
-      font-size: 0.75rem;
+      font-size: var(--font-size-key);
+      font-family: roboto;
       padding-bottom: 0.5rem;
    }
 
    .bored__details-value {
-      font-size: 1.2rem;
+      font-size: var(--font-size-value);
    }
 
    .bored__controls {
@@ -230,15 +309,14 @@ export default {
    }
 
    .bored__generate {
-      width: 8rem;
-      padding:  0.5rem;
-      margin-bottom: 0.5rem;
+      font-size: var(--font-size-value);
+      margin: var(--spacing-large) 0 var(--spacing-small) 0;
+      padding: var(--spacing-padding) var(--spacing-small);
    }
 
    .bored__filter {
-      font-size: 0.6rem;
-      width: 4rem;
-      padding:  0.3rem;
+      font-size: var(--font-size-key);
+      padding: var(--spacing-padding);
    }
 
    .bored__button {
@@ -259,5 +337,11 @@ export default {
    .Bored__filter-menu {
       position: absolute;
       z-index: 20;
+   }
+
+   @media screen and (max-device-width: 767px) {
+      .bored__link {
+         height: 10rem;
+      }
    }
 </style>

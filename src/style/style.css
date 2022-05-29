@@ -2,4 +2,18 @@ body {
    background: var(--background);
    font-family: bely-display, sans-serif;
    color: var(--primary-color);
+   font-size: var(--font-size-body);
+}
+
+h1 {
+   color: var(--highlight-color);
+   font-size: var(--font-size-title);
+   text-transform: uppercase;
+   font-family: bely-display, sans-serif;
+   font-weight: 400;
+   font-style: normal;
+}
+
+h2 {
+   font-size: var(--font-size-subtitle);
 }

@@ -5,5 +5,30 @@
 
    --font-body: "roboto";
    --font-display: "bely-display, san-serif";
-   --font-size: 12px;
+
+   --font-size-key: 0.7em;
+   --font-size-link: 0.8em;
+   --font-size-type: 0.85em;
+   --font-size-body: 16px; /*ROOT*/
+   --font-size-value: 1.2em;
+   --font-size-activity: 1.5em;
+   --font-size-subtitle: 1.6em;
+   --font-size-title: 4em;
+
+   --spacing-padding: 0.3em;
+   --spacing-small: 20px; /*ROOT*/
+   --spacing-medium: 2em;
+   --spacing-large: 4.5em;
+
+   --border-style: solid 1px;
+}
+
+@media screen and (max-device-width: 767px) {
+   :root {
+      --font-size-body: 40px;
+
+      --spacing-small: 40px;
+
+      --border-style: solid 4px;
+   }
 }

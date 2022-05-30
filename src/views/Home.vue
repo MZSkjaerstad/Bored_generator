@@ -124,7 +124,7 @@ export default {
                if(response.status > 500) {
                   throw new Error('Server error.');
                }
-               throw new Error('Her gikk noe galt.');
+            throw new Error('Her gikk noe galt.');
          }
       },
 

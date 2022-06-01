@@ -90,18 +90,20 @@ export default {
 
    /* Fetch random dataset */
       async getRandom() {
-         const url = 'https://www.boredapi.com/api/activity/';
+         const url = 'http://www.boredapi.com/api/activity/';
          const response = await fetch(url);
          try {
             await this.handleRandomFetch(response)
          } catch(error) {
             this.error = error.message;
+            console.log(error)
          }
       },
 
       async handleRandomFetch(response) {
          if (response.status >= 200 && response.status < 300) {
             const results = await response.json();
+            console.log(results)
 
             this.values.key = results.key;
             this.values.type = results.type;
@@ -130,7 +132,7 @@ export default {
 
    /* Fetch dataset spesified by edited values in filter */
       async getSpecified() {
-         const url = `https://www.boredapi.com/api/activity/?type=${this.values.type}&participants=${this.values.participants}`;
+         const url = `http://www.boredapi.com/api/activity/?type=${this.values.type}&participants=${this.values.participants}`;
          const response = await fetch(url);
          try {
             await this.handleSpesifiedFetch(response);

@@ -90,14 +90,35 @@ export default {
 
    /* Fetch random dataset */
       async getRandom() {
-         const url = 'http://www.boredapi.com/api/activity/';
-         const response = await fetch(url);
-         try {
-            await this.handleRandomFetch(response)
-         } catch(error) {
-            this.error = error.message;
-            console.log(error)
-         }
+         const url = 'https://www.boredapi.com/api/activity/';
+         const response = await fetch(url, {
+         method: 'GET',
+         mode: 'no-cors',
+         redirect: 'follow',
+         requestCert: false,
+         rejectUnauthorized: false,
+         agent: false,
+         xhrFields: {
+         withCredentials: true
+         },
+         dataType: 'jsonp',
+         headers: {
+         'Accept': 'application/json',
+         'Content-Type': 'application/json'
+      }})
+      const results = await response.json();
+            console.log(results)
+
+            this.values.key = results.key;
+            this.values.type = results.type;
+            this.values.activity = results.activity;
+            this.values.link = results.link
+            this.values.participants = results.participants;
+            this.values.accessibility = results.accessibility;
+            this.values.price = results.price;
+
+            this.values.accessibility = this.filterAccess()
+            this.values.price = this.filterPrice()
       },
 
       async handleRandomFetch(response) {
@@ -132,7 +153,7 @@ export default {
 
    /* Fetch dataset spesified by edited values in filter */
       async getSpecified() {
-         const url = `http://www.boredapi.com/api/activity/?type=${this.values.type}&participants=${this.values.participants}`;
+         const url = `https://www.boredapi.com/api/activity/?type=${this.values.type}&participants=${this.values.participants}`;
          const response = await fetch(url);
          try {
             await this.handleSpesifiedFetch(response);
